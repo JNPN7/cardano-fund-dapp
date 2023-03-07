@@ -63,16 +63,9 @@ mkValidator dat () ctx = traceIfFalse "You are not a beneficiary" signedByBenefi
         signedByBeneficiary :: Bool
 		signedByBeneficiary = signedByBeneficiary1 || signedByBeneficiary2
 
-		checkBeneficiary1 :: Bool
-        checkBeneficiary1 = txSignedBy info $ unPaymentPubKeyHash $ bpBeneficiary1 dat
-
-        checkBeneficiary2 :: Bool
-        checkBeneficiary2 = txSignedBy info $ unPaymentPubKeyHash $ bpBeneficiary2 dat
-
         isSplitInHalf :: Bool
         isSplitInHalf =
           let outputs =  txInfoOutptus $ info
-              inputs = txInfoInputs $ info
               split1 = foldr (\x acc ->
                                 if (txOutAddress x == bpBeneficiary1 dat) then acc + (valueOf (txOutValue x) adaSymbol adaToken )
                         ) 0 outputs

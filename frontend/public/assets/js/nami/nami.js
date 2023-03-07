@@ -1,7 +1,10 @@
+
+
 class NamiWalletApi {
-	constructor(nami, apiKey) {
+	constructor(nami, apiKey, serializableLib) {
         this.apiKey  = apiKey;
         this.Nami = nami;
+		this.S = serializableLib;
     }
 
 	async isInstalled() {
@@ -21,6 +24,21 @@ class NamiWalletApi {
 			throw error;
 		  }
 		}
+	}
+
+	async getAddress() {
+		if (!this.isEnabled()) throw ERROR.NOT_CONNECTED;
+		const addressHex = Buffer.from(
+			(await this.Nami.getUsedAddresses())[0],
+			"hex"
+		);
+		const address = this.S.BaseAddress.from_address(
+			this.S.Address.from_bytes(addressHex)
+		)
+		.to_address()
+		.to_bech32();
+
+		return address;
 	}
 }
 
