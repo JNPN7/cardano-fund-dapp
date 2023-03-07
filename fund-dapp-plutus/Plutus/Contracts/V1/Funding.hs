@@ -40,42 +40,58 @@ data Benificiary = Beneficiary
 	{ pubKeyHash :: PaymentPubKeyHash
  	, amount     :: Integer
 	} deriving Show
-
 data Benificiaries = Benificiaries
     { beneficiary1 :: PaymentPubKeyHash
-	, beneficiary2 :: PaymentPubKeyHash
-	} deriving Show
+    , beneficiary2 :: PaymentPubKeyHash
+    } deriving Show
 
 {-# INLINABLE mkValidator #-}
 mkValidator :: Benificiaries -> () -> ScriptContext -> Bool
-mkValidator dat () ctx = traceIfFalse "You are not a beneficiary" signedByBeneficiary  
-					   && traceIfFalse "split is not done 50 50" isSplitInHalf
+mkValidator dat () ctx = traceIfFalse "You are not a beneficiary" signedByBeneficiary
+                       && traceIfFalse "split is not done 50 50" isSplitInHalf
     where
-		info :: TxInfo
-		info = scriptContextTxInfo ctx
-		
-		signedByBeneficiary1 :: Bool
-		signedByBeneficiary1 = txSignedBy info $ unPaymentPubKeyHash $ beneficiary1 dat
+        info :: TxInfo
+        info = scriptContextTxInfo ctx
+        
+        signedByBeneficiary1 :: Bool
+        signedByBeneficiary1 = txSignedBy info $ unPaymentPubKeyHash $ beneficiary1 dat
 
-		signedByBeneficiary2 :: Bool
-		signedByBeneficiary2 = txSignedBy info $ unPaymentPubKeyHash $ beneficiary2 dat
+        signedByBeneficiary2 :: Bool
+        signedByBeneficiary2 = txSignedBy info $ unPaymentPubKeyHash $ beneficiary2 dat
 
         signedByBeneficiary :: Bool
-		signedByBeneficiary = signedByBeneficiary1 || signedByBeneficiary2
+        signedByBeneficiary = signedByBeneficiary1 || signedByBeneficiary2
 
         isSplitInHalf :: Bool
         isSplitInHalf =
-          let outputs =  txInfoOutptus $ info
-              split1 = foldr (\x acc ->
-                                if (txOutAddress x == bpBeneficiary1 dat) then acc + (valueOf (txOutValue x) adaSymbol adaToken )
-                        ) 0 outputs
-              split2 =  foldr (\x acc ->
-                                if (txOutAddress x == bpBeneficiary2 dat) then acc + (valueOf (txOutValue x) adaSymbol adaToken)
-                        ) 0 outputs
-              scriptValue = foldr (\x acc ->
-                                    acc + (valueOf (txOutValue x) adaSymbol adaToken)
-                        ) 0 inputs
-          in split1 == split2 == scriptValue/2
+            let outputs =  txInfoOutptus info
+                split1 = Map.foldr (\x acc ->
+                            if txOutAddress x == beneficiary1 dat then acc + valueOf (txOutValue x) adaSymbol adaToken else acc
+                         ) 0 outputs
+                split2 = Map.foldr (\x acc ->
+                            if txOutAddress x == beneficiary2 dat then acc + valueOf (txOutValue x) adaSymbol adaToken else acc
+                         ) 0 outputs
+                scriptValue = Map.foldr (\x acc ->
+                            acc + valueOf (txOutValue x) adaSymbol adaToken
+                         ) 0 inputs
+            in (split1 == split2) || split1 == scriptValue/2
+
+
+data Funding
+instance Scripts.ValidatorTypes Funding where
+    type instance DatumType Funding = Benificiaries
+    type instance RedeemerType Funding = ()
+
+
+typedValidator :: Scripts.TypedValidator Funding
+typedValidator = Scripts.mkTypedValidator @Funding
+    $$(PlutusTx.compile [|| mkValidator ||])
+    $$(PlutusTx.compile [|| wrap ||])
+  where
+    wrap = Scripts.wrapValidator @Benificiaries @()
+
+validator :: Validator
+validator = Scripts.validatorScript typedValidator
 
 
 data Funding
@@ -85,7 +101,7 @@ instance Scripts.ValidatorTypes Funding where
 
 
 typedValidator :: Scripts.TypedValidator Vesting
-typedValidator p = Scripts.mkTypedValidator @Funding
+typedValidator = Scripts.mkTypedValidator @Funding
     $$(PlutusTx.complie [|| mkValidator ||])
 	$$(PlutusTx.complie [|| wrap ||])
   where
