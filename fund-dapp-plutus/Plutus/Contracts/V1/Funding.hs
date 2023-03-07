@@ -80,7 +80,7 @@ mkValidator dat () ctx = traceIfFalse "You are not a beneficiary" signedByBenefi
                                 if (txOutAddress x == bpBeneficiary2 dat) then acc + (valueOf (txOutValue x) adaSymbol adaToken)
                         ) 0 outputs
               scriptValue = foldr (\x acc ->
-                                    acc + (valueOf (txOutValue (txInInfoResolved x)) adaSymbol adaToken)
+                                    acc + (valueOf (txOutValue x) adaSymbol adaToken)
                         ) 0 inputs
           in split1 == split2 == scriptValue/2
 
