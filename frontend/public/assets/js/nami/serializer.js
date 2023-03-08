@@ -1,4 +1,4 @@
-class Loader {
+class Serializer {
   async load() {
     if (this._wasm) return;
     /**
@@ -12,4 +12,4 @@ class Loader {
   }
 }
 
-export default new Loader();
+export default new Serializer();

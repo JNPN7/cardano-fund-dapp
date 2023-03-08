@@ -1,10 +1,9 @@
-
+import * as S from "../cardano-serialization-lib-asmjs/cardano_serialization_lib.js"
 
 class NamiWalletApi {
-	constructor(nami, apiKey, serializableLib) {
+	constructor(nami, apiKey) {
         this.apiKey  = apiKey;
         this.Nami = nami;
-		this.S = serializableLib;
     }
 
 	async isInstalled() {
@@ -32,8 +31,8 @@ class NamiWalletApi {
 			(await this.Nami.getUsedAddresses())[0],
 			"hex"
 		);
-		const address = this.S.BaseAddress.from_address(
-			this.S.Address.from_bytes(addressHex)
+		const address = S.BaseAddress.from_address(
+			S.Address.from_bytes(addressHex)
 		)
 		.to_address()
 		.to_bech32();
@@ -42,12 +41,16 @@ class NamiWalletApi {
 	}
 }
 
-nami = new NamiWalletApi(window.cardano, "some api");
+export default NamiWalletApi;
 
-connect_btn = document.getElementById("connect");
+var nami = new NamiWalletApi(window.cardano, "some api");
+
+var connect_btn = document.getElementById("connect");
 if (nami.isEnabled()) {
 	connect_btn.classList.add("d-none");
 }
 
+console.log(await window.cardano.getUsedAddresses())
+console.log(nami.getAddress())
 connect_btn.onclick = nami.enable();
 
