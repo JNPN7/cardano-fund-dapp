@@ -31,7 +31,7 @@ mkValidator _ _ ctx = traceIfFalse "You are not a beneficiary" signedByBeneficia
         beneficiaries :: Benificiaries
         beneficiaries = Benificiaries {
             beneficiary1 = PaymentPubKeyHash "c77150227ca0cb67d597f415b0a424aa02246b54bb3bb03ec1667aa2",
-            beneficiary2 = PaymentPubKeyHash "c77150227ca0cb67d597f415b0a424aa02246b54bb3bb03ec1667aa2"
+            beneficiary2 = PaymentPubKeyHash "7e36a4c8da9c6ffaa842d69432c3008b76dd7a338111c55abe958dcc"
         }
     
         signedByBeneficiary1 :: Bool 

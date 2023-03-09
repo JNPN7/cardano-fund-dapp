@@ -50,17 +50,25 @@ mkValidator p _ _ ctx = traceIfFalse "split is not done 50 50" isSplitInHalf
         isSplitInHalf =
             let outputs =  txInfoOutputs info
                 inputs  =  txInfoInputs  info
-
-                split1' = Value.valueOf (valuePaidTo info $ unPaymentPubKeyHash $ beneficiary1 p) adaSymbol adaToken
-
-                split2' = Value.valueOf (valuePaidTo info $ unPaymentPubKeyHash $ beneficiary1 p) adaSymbol adaToken
+                --inputs' = foldr (\x acc -> if (checkIsValidatorUtxo x $ ownHash ctx) then x:acc else acc) [] inputs
                 
+                split1 = foldr (\x acc ->
+                            if checkIsSameAddress (txOutAddress x) (unPaymentPubKeyHash $ beneficiary1 p) 
+                                then acc + Value.valueOf (txOutValue x) adaSymbol adaToken 
+                            else acc
+                         ) 0 outputs
+
+                split2 = foldr (\x acc ->
+                            if checkIsSameAddress (txOutAddress x) (unPaymentPubKeyHash $ beneficiary2 p) 
+                                then acc + Value.valueOf (txOutValue x) adaSymbol adaToken 
+                            else acc
+                         ) 0 outputs
 
                 scriptValue = foldr (\x acc ->
                             if checkIsValidatorUtxo x $ ownHash ctx then acc + Value.valueOf (txOutValue $ txInInfoResolved x) adaSymbol adaToken else acc
                          ) 0 inputs
 
-            in (split1' == split2') && (split1' + split2' == scriptValue)
+            in (split1 == split2) && (split1 + split2 == scriptValue)
 
 
 {-# INLINABLE wrapValidator #-}
