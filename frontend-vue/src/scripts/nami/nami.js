@@ -12,13 +12,13 @@ export class NamiWalletApi {
 	}
 
 	async isEnabled() {
-		return await this.Nami.isEnabled();
+		return await this.Nami.nami.isEnabled();
 	}
 
 	async enable() {
 		if (!await this.isEnabled()) {
 		  try {
-			return await this.Nami.enable();
+			  return await this.Nami.nami.enable();
 		  } catch (error) {
 			throw error;
 		  }

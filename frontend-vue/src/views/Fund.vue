@@ -1,6 +1,6 @@
 <script setup>
 import Button from "@/components/Button.vue"
-import { NamiWalletApi } from "@/scripts/nami/nami.js"
+import { NamiWalletApi, signAndSubmit } from "@/scripts/nami/nami.js"
 import { Kuber } from "@/scripts/nami/kuber.js"
 import { KuberJson } from "@/scripts/models/kuberJson.js"
 import { market } from "@/config.js"
@@ -47,6 +47,7 @@ export default {
 			const tx = await kuber.callKuber(data)
 			console.log(tx.tx)
 			console.log(tx.txHash)
+			signAndSubmit(await window.cardano.nami.enable(), tx.tx)
 		}
 	}
 }

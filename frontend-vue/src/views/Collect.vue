@@ -1,5 +1,5 @@
 <script setup>
-import { NamiWalletApi } from "@/scripts/nami/nami.js"
+import { NamiWalletApi, signAndSubmit } from "@/scripts/nami/nami.js"
 import { Kuber } from "@/scripts/nami/kuber.js"
 import { KuberJson } from "@/scripts/models/kuberJson.js"
 import { market, beneficiary } from "@/config.js"
@@ -50,12 +50,14 @@ export default {
 					market.script.cborHex,
 				)
 			})
-			//kuberJson.addCollateralAddrBech32(await nami.getAddress())
+			kuberJson.addCollateralCborHex(await window.cardano.getCollateral())
 			const data = kuberJson.getJsonString()
+			console.log(data)
 
 			const tx = await kuber.callKuber(data)
 			console.log(tx.tx)
 			console.log(tx.txHash)
+			signAndSubmit(await window.cardano.nami.enable(), tx.tx)
 		}
 	}
 }
