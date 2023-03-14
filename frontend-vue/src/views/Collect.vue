@@ -1,3 +1,11 @@
+<script setup>
+import { NamiWalletApi } from "@/scripts/nami/nami.js"
+import { Kuber } from "@/scripts/nami/kuber.js"
+import { KuberJson } from "@/scripts/models/kuberJson.js"
+import { market, beneficiary } from "@/config.js"
+import { BlockFrostApi } from "@/scripts/nami/blockfrost.js"
+</script>
+
 <template>
 	<div class="container">
 		<div class="glass p-4 center-window">
@@ -7,7 +15,7 @@
 						<div class="h2 text-center"> Let's Collect </div>
 					</div>
 					<div class="text-center">
-						<button class="btn btn-primary"> Collect </button>
+						<button @click="collect" class="btn btn-primary"> Collect </button>
 					</div>
 				</div>
 
@@ -18,7 +26,38 @@
 
 <script>
 export default {
-	name: "Collect"
+	name: "Collect",
+	methods: {
+		async collect() {
+			const nami = new NamiWalletApi(window.cardano)
+			const kuber = new Kuber()
+			const kuberJson = new KuberJson()
+			const blockfrost = new BlockFrostApi(nami)
+
+			var balance = await blockfrost.getScriptBalance()
+			var utxos = await blockfrost.getUtxos()
+
+			kuberJson.addSelectionAddrBech32(await nami.getAddress())
+			kuberJson.addOutput(beneficiary.beneficiary1, balance/2 + "lovelace")
+			kuberJson.addOutput(beneficiary.beneficiary2, balance/2 + "lovelace")
+			//kuberJson.addInputsScript()
+			utxos.forEach(utxo => {
+				kuberJson.addInputsScript(
+					utxo.tx_hash,
+					utxo.tx_index,
+					market.script.type,
+					market.script.description,
+					market.script.cborHex,
+				)
+			})
+			//kuberJson.addCollateralAddrBech32(await nami.getAddress())
+			const data = kuberJson.getJsonString()
+
+			const tx = await kuber.callKuber(data)
+			console.log(tx.tx)
+			console.log(tx.txHash)
+		}
+	}
 }
 </script>
 

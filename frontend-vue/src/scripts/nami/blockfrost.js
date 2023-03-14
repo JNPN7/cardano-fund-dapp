@@ -1,5 +1,6 @@
 import { blockfrost } from "@/config"
 import { NamiWalletApi } from "@/scripts/nami/nami.js"
+import { market } from "@/config.js"
 
 export class BlockFrostApi {
 	constructor(nami) {
@@ -13,9 +14,24 @@ export class BlockFrostApi {
 	}
 
 	async getBalance() {
-		const res = await this._request("/addresses/" + await this._getAddress() + "/utxos?order=desc")
-		return res[0].amount[0].quantity
+		const res = await this._request("/addresses/" + await this._getAddress())
+		return res.amount[0].quantity
+	}
 
+	async getScriptBalance() {
+		const res = await this._request("/addresses/" + market.address)
+		var balance = 0
+		res.amount.forEach(amt => {
+			if (amt.unit == "lovelace") {
+				balance = amt.quantity
+			}
+		})
+		return balance
+	}
+
+	async getUtxos() {
+		const res = await this._request("/addresses/" + market.address + "/utxos?order=desc")
+		return res
 	}
 
 	async _request(path) {

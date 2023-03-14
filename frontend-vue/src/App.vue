@@ -1,6 +1,8 @@
 <script setup>
-import {NamiWalletApi, test} from "@/scripts/nami/nami.js"
+import { NamiWalletApi, signAndSubmit } from "@/scripts/nami/nami.js"
 import { BlockFrostApi } from "@/scripts/nami/blockfrost.js"
+import { Kuber } from "@/scripts/nami/kuber.js"
+import { KuberJson } from "@/scripts/models/kuberJson.js"
 </script>
 
 <template>
@@ -22,8 +24,6 @@ export default {
 		if (nami.isEnabled()) {
 			this.isConnected = true
 		}
-		const blockfrost = new BlockFrostApi(nami)
-		await blockfrost.getBalance()
 	},
 	methods: {
 		async connectNami() {
